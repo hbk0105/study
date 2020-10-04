@@ -123,11 +123,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()*/
+                .cors().and().csrf().disable()
+                .authorizeRequests()
+                // 페이지 권한 설정
+                .antMatchers("/test/**").hasRole("ADMIN")
+                .antMatchers("/wow/**").hasRole("USER")
+                .antMatchers("/aaa").permitAll()
+                .and()
+              .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-               // .cors().and().csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
 
-
-                .addFilterBefore(
+                .and().addFilterBefore(
                         new JwtRequestFilter(jwtTokenUtil , redisTemplate), UsernamePasswordAuthenticationFilter.class);
 
 

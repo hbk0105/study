@@ -211,20 +211,19 @@ public class HomeController {
     // https://cnpnote.tistory.com/entry/SPRING-Spring-Security%EB%A1%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EB%A1%9C%EA%B7%B8-%EC%95%84%EC%9B%83%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95
     @GetMapping("/test")
     public String asdsad(HttpServletRequest request, HttpServletResponse response){
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        logger.info("auth ::!!11111 " + auth );
-        if (auth != null){
-            new SecurityContextLogoutHandler().logout(request, response, auth);
-        }
-        SecurityContextHolder.getContext().setAuthentication(null);
-
-        auth = SecurityContextHolder.getContext().getAuthentication();
-
-        logger.info("auth ::!!2222 " + auth );
-
         return "index";
     }
+
+    @GetMapping("/wow")
+    public String wow(HttpServletRequest request, HttpServletResponse response){
+        return "wow";
+    }
+    @GetMapping("/aaa")
+    public String aaa(HttpServletRequest request, HttpServletResponse response){
+
+        return "aaa";
+    }
+
+
 
 }
