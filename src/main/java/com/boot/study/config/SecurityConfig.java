@@ -126,9 +126,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors().and().csrf().disable()
                 .authorizeRequests()
                 // 페이지 권한 설정
+
                 .antMatchers("/test/**").hasRole("ADMIN")
                 .antMatchers("/wow/**").hasRole("USER")
+
                 .antMatchers("/aaa").permitAll()
+/*
+                .and()
+                .requiresChannel().anyRequest().requiresSecure()
+                .and()
+                .portMapper()
+                .http(8080).mapsTo(8443)
+                */
                 .and()
               .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
                 .and()
