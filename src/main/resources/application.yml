@@ -12,14 +12,32 @@ spring:
     show-sql: true
     hibernate:
       format_sql: true
-      ddl-auto: create
+      ddl-auto: update
 
   thymeleaf:
     prefix : classpath:templates/
     suffix : .html
     cache : false
 
-  devtools:
-    liverload:
-      enabled: true
+  #devtools:
+  #  liverload:
+  #    enabled: true
+
+  security:
+    user:
+      name : user
+      password : 1234
+
+  jwt:
+    secret: JWTSuperSecretKey
+
+  redis:
+      host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 2
+
 

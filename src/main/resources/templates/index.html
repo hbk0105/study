@@ -29,65 +29,6 @@
 
     <script th:inline="javascript">
 
-        // https://dodamit.tistory.com/30
-        // https://suyou.tistory.com/151
-
-        /*<![CDATA[*/
-
-        var _csrf_header = /*[[ ${_csrf_header} ]]*/;
-        var _csrf = /*[[ ${_csrf} ]]*/;
-
-        /*]]*/
-
-        console.log(_csrf_header);
-        console.log(_csrf);
-
-
-        /*<![CDATA[*/
-
-
-
-        $( document ).ready(function() {
-           // swal("Hello world!");
-
-            // https://coding-restaurant.tistory.com/264
-            // https://qastack.kr/programming/2010892/storing-objects-in-html5-localstorage
-            //localStorage 데이터 추가 방법 3가지
-            var obj = { '_csrf_header': _csrf_header, '_csrf': _csrf};
-
-            // Put the object into storage
-            localStorage.setItem('obj', JSON.stringify(obj));
-
-            // Retrieve the object from storage
-            var retrievedObject = localStorage.getItem('obj');
-
-            console.log('retrievedObject: ', JSON.parse(retrievedObject));
-
-
-           // var cat = localStorage.getItem('myCat'); //조회
-           // localStorage.setItem('myCat', 'Tom'); //추가
-           // localStorage.removeItem('myCat'); //삭제
-            // localStorage.clear(); // 전체삭제
-
-            $.ajax({
-                type: "get",
-                url: "/tt",
-                beforeSend: function(xhr){
-                    xhr.setRequestHeader(_csrf_header, _csrf);	// 헤더의 csrf meta태그를 읽어 CSRF 토큰 함께 전송
-                }, success : function(response) {
-                    console.log(response);
-                }, error : function(jqXHR, status, e) {
-                    console.error(status + " : " + e);
-                }
-
-            });
-
-        });
-
-
-        /*[- end of function -]*/
-
-        /*]]>*/
 
 
     </script>
