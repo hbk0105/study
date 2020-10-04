@@ -29,9 +29,38 @@
 
     <script th:inline="javascript">
 
+        // https://dodamit.tistory.com/30
+        // https://suyou.tistory.com/151
+
+
+
+        $( document ).ready(function() {
+            // swal("Hello world!");
+
+            $.ajax({
+                type: "get",
+                url: "/log",
+                beforeSend: function(xhr){
+                    xhr.setRequestHeader("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjpbIlJPTEVfSEkiLCJST0xFX1VTRVIiXSwic3ViIjoidXNlciIsImlhdCI6MTYwMTgwNjc3NiwiZXhwIjoxNjAxODA3Mzc2fQ.iGfE9yl3rXKQC24QbI-uRRTvIKOFMXjcNl7ZZm2jsanz1HzHUlEqIOYVUQESpeso5bl69KOt1Cw8kQeT02dN4g");	// 헤더의 csrf meta태그를 읽어 CSRF 토큰 함께 전송
+                }, success : function(response) {
+                    console.log(response);
+                }, error : function(jqXHR, status, e) {
+                    console.log(jqXHR);
+                }
+
+            });
+
+
+        });
+
+
+        /*[- end of function -]*/
+
+        /*]]>*/
 
 
     </script>
+
 
 </th:block>
 
