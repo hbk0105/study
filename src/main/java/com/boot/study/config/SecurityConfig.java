@@ -2,6 +2,7 @@ package com.boot.study.config;
 
 
 
+import com.boot.study.jwt.JwtAuthenticationEntryPoint;
 import com.boot.study.jwt.JwtRequestFilter;
 import com.boot.study.jwt.JwtTokenUtil;
 import com.boot.study.service.JwtUserDetailsService;
@@ -45,6 +46,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired private JwtAuthenticationEntryPoint unauthorizedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -120,6 +123,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()*/
+
+               // .cors().and().csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
+
+
                 .addFilterBefore(
                         new JwtRequestFilter(jwtTokenUtil , redisTemplate), UsernamePasswordAuthenticationFilter.class);
 
