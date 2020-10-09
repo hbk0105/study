@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -55,7 +56,7 @@ public class HomeController {
 
         ModelAndView modelAndView = new ModelAndView();
         ArrayList<HashMap<String, Object>> boardList = new ArrayList<HashMap<String, Object>>();
-
+        Authentication auth;
         try{
 
             HashMap<String, Object> m  = new HashMap<>();
@@ -77,7 +78,7 @@ public class HomeController {
                     sc.setAuthentication(result);
 */
 
-                    //authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, m.get("password")));
+                    auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, m.get("password")));
 
                     /*Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -88,7 +89,9 @@ public class HomeController {
                     throw e;
                 }
 
-                final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                //final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                final UserDetails userDetails = (UserDetails) auth.getPrincipal();
                 String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
                 String refreshToken = jwtTokenUtil.generateRefreshToken(username);
 

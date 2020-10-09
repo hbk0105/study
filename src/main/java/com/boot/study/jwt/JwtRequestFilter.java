@@ -24,6 +24,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
@@ -61,10 +62,10 @@ public class JwtRequestFilter<DecodedJWT> extends OncePerRequestFilter {
     @Autowired
     private JwtUserDetailsService jwtUserDetailsService;
 
-    public JwtRequestFilter(JwtTokenUtil jwtTokenUtil , RedisTemplate<String, Object> redisTemplate) {
+  /*  public JwtRequestFilter(JwtTokenUtil jwtTokenUtil , RedisTemplate<String, Object> redisTemplate) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.redisTemplate = redisTemplate;
-    }
+    }*/
 
 
 
@@ -98,6 +99,11 @@ public class JwtRequestFilter<DecodedJWT> extends OncePerRequestFilter {
 
 
         String requestTokenHeader = request.getHeader("Authorization");
+
+        Authentication auth =  SecurityContextHolder.getContext().getAuthentication();
+
+        logger.warn("auth :: "+ auth);
+
 
         String username = null;
         String jwtToken = null;
@@ -158,13 +164,20 @@ public class JwtRequestFilter<DecodedJWT> extends OncePerRequestFilter {
 
             logger.warn("여기타니?");
             //DB access 대신에 파싱한 정보로 유저 만들기!
-            Authentication authen =  getAuthentication(jwtToken);
 
-            logger.info("authen :: " + authen);
             //만든 authentication 객체로 매번 인증받기
-            SecurityContextHolder.getContext().setAuthentication(authen);
+
             response.setHeader("username", username);
 
+            UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
+
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new
+                    UsernamePasswordAuthenticationToken(userDetails , null ,userDetails.getAuthorities());
+            usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+            logger.info("UsernamePasswordAuthenticationToken  :: " + usernamePasswordAuthenticationToken);
 
             // 로그아웃 ..
             /*

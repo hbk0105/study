@@ -28,7 +28,7 @@ public class JwtTokenUtil implements Serializable {
     final static public String ACCESS_TOKEN_NAME = "accessToken";
     final static public String REFRESH_TOKEN_NAME = "refreshToken";
 
-    private String SECRET_KEY = "YTg3OTc5MTJhOWY0ZTI2YTcwYTA1NzExZjk1MWIzOGMzNGQyYTZlNTNiYzU5YTEyZWMzNjU1ZjczYmUzYzAzZDM4YjYwODM1YWExNDllY2ZlZDllMzFlYmViOTRiOWMzM2MwOQ==";
+    final static public String SECRET_KEY = "YTg3OTc5MTJhOWY0ZTI2YTcwYTA1NzExZjk1MWIzOGMzNGQyYTZlNTNiYzU5YTEyZWMzNjU1ZjczYmUzYzAzZDM4YjYwODM1YWExNDllY2ZlZDllMzFlYmViOTRiOWMzM2MwOQ==";
 
     @Autowired
     RedisTemplate<String, Object> redisTemplate;
@@ -54,9 +54,6 @@ public class JwtTokenUtil implements Serializable {
     }
 
     public Map<String, Object> getUserParseInfo(String token) {
-
-        logger.info("@#@#@ token :: " + token);
-
         Claims parseInfo = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
         Map<String, Object> result = new HashMap<>();
         result.put("username", parseInfo.getSubject());
