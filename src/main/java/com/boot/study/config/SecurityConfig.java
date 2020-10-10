@@ -2,19 +2,16 @@ package com.boot.study.config;
 
 
 
+import com.boot.study.exception.RestAccessDeniedExceptionHandler;
+import com.boot.study.exception.RestAuthenticationExceptionHandler;
 import com.boot.study.jwt.JwtAuthenticationEntryPoint;
-import com.boot.study.jwt.JwtRequestFilter;
-import com.boot.study.jwt.JwtTokenUtil;
+import com.boot.study.filter.JwtRequestFilter;
 import com.boot.study.service.JwtUserDetailsService;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,8 +20,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 // https://www.xspdf.com/help/50627003.html
 /*@Configuration
 @EnableWebSecurity
@@ -38,14 +37,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // https://jungeunlee95.github.io/java/2019/07/17/2-Spring-Security/
     // https://growing-up-constantly.tistory.com/41?category=333833
 
+
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
-
-    @Autowired
-    RedisTemplate<String, Object> redisTemplate;
 
     @Autowired private JwtAuthenticationEntryPoint unauthorizedHandler;
 
@@ -139,13 +136,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .portMapper()
                 .http(8080).mapsTo(8443)
                 */
-                .and()
-              .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+
+                //exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+                .and().exceptionHandling().accessDeniedHandler(accessDeniedHandler()).authenticationEntryPoint(authenticationExceptionHandler())
+
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-
+                .and().cors().configurationSource(corsConfigurationSource())
                 .and().addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
 
@@ -157,6 +156,38 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //        로그인 처리 즉, 인증을 위해서는 UserDetailService를 통해서 필요한 정보들을 가져오는데, 예제에서는 서비스 클래스(userLoginService)에서 이를 처리
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
+
+    // CORS 허용 적용
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+
+    // 커스텀 예외처리
+    @Bean
+    RestAccessDeniedExceptionHandler accessDeniedHandler() {
+        return new RestAccessDeniedExceptionHandler();
+    }
+
+    // 커스텀 예외처리
+    @Bean
+    RestAuthenticationExceptionHandler authenticationExceptionHandler() {
+        return new RestAuthenticationExceptionHandler();
+    }
+
+
+
+
 
     /*
 

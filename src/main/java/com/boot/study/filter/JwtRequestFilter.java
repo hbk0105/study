@@ -1,26 +1,21 @@
-package com.boot.study.jwt;
+package com.boot.study.filter;
 
 
 import com.boot.study.domain.Token;
+import com.boot.study.jwt.JwtTokenUtil;
 import com.boot.study.service.JwtUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,21 +27,16 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-import java.util.Base64.Decoder;
-import java.util.Base64.Encoder;
-
-
 
 
 @Component
-public class JwtRequestFilter<DecodedJWT> extends OncePerRequestFilter {
+public class JwtRequestFilter extends OncePerRequestFilter {
 
     private Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
 
@@ -100,9 +90,37 @@ public class JwtRequestFilter<DecodedJWT> extends OncePerRequestFilter {
 
         String requestTokenHeader = request.getHeader("Authorization");
 
-        Authentication auth =  SecurityContextHolder.getContext().getAuthentication();
 
-        logger.warn("auth :: "+ auth);
+        // 헤더로 전달된 csrf 토큰 값
+        String paramToken = request.getHeader("_csrf");
+
+        // Double Submit Cookie
+        boolean crsfdDfense = false;
+        // 쿠키로 전달되 csrf 토큰 값
+        String cookieToken = "";
+
+        if(request.getCookies() != null){
+            for (Cookie cookie : request.getCookies()) {
+                if ("CSRF_TOKEN".equals(cookie.getName())) {
+                    cookieToken = URLDecoder.decode(cookie.getValue(), "UTF-8");
+
+                    // 재사용이 불가능하도록 쿠키 만료
+                    cookie.setPath("/");
+                    cookie.setValue("");
+                    cookie.setMaxAge(0);
+                    response.addCookie(cookie);
+                    break;
+                }
+            }
+        }
+
+        // 두 값이 일치하는 지 검증
+        if (cookieToken.equals(paramToken)) {
+            crsfdDfense = true;
+        }
+
+        logger.info("crsfdDfense :: " + crsfdDfense);
+        logger.info("paramToken :: "+ paramToken);
 
 
         String username = null;
