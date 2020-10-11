@@ -91,6 +91,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String requestTokenHeader = request.getHeader("Authorization");
 
 
+        // csrf 방어 검증 시작
         // 헤더로 전달된 csrf 토큰 값
         String paramToken = request.getHeader("_csrf");
 
@@ -118,6 +119,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (cookieToken.equals(paramToken)) {
             crsfdDfense = true;
         }
+        // csrf 방어 검증 종료
 
         logger.info("crsfdDfense :: " + crsfdDfense);
         logger.info("paramToken :: "+ paramToken);
@@ -164,24 +166,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             String payloadJson = new String(decoder.decode(parts[1]));
             String signatureJson = new String(decoder.decode(parts[2]));
 
-            logger.info("headerJson :: " + headerJson);
-            logger.info("payloadJson :: " + payloadJson);
-            logger.info("signatureJson :: " + signatureJson);
+
             ObjectMapper mapper = new ObjectMapper();
             Map<String, String> map = mapper.readValue(payloadJson, Map.class);
-
-
             logger.info("map :: " + map.get("sub"));
 
             ValueOperations<String, Object> vop2 = redisTemplate.opsForValue();
             Token result = (Token) vop2.get( map.get("sub").toString()); // 유저 이름으로 redis에서 리프레시 토큰값 추출.\
 
-            logger.info("@#@#@ result ㅋㅋㅋㅋㅋ:: " + result);
+            logger.info("@#@#@ result :: " + result);
 
             // 토큰 값 변환
-
-            logger.warn("여기타니?");
-            //DB access 대신에 파싱한 정보로 유저 만들기!
 
             //만든 authentication 객체로 매번 인증받기
 
@@ -200,7 +195,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             // 로그아웃 ..
             /*
             https://www.programcreek.com/java-api-examples/?api=org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
-
 
 
 

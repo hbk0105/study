@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -209,9 +211,14 @@ public class HomeController {
         return "index";
     }
 
+    /*
+    *
+    * 로그아웃 샘픔
+    *https://dkyou.tistory.com/23
+    * https://cnpnote.tistory.com/entry/SPRING-Spring-Security%EB%A1%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EB%A1%9C%EA%B7%B8-%EC%95%84%EC%9B%83%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95
+    *
+    */
 
-    // https://dkyou.tistory.com/23
-    // https://cnpnote.tistory.com/entry/SPRING-Spring-Security%EB%A1%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EB%A1%9C%EA%B7%B8-%EC%95%84%EC%9B%83%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95
     @GetMapping("/test")
     public String asdsad(HttpServletRequest request, HttpServletResponse response){
         return "index";
@@ -221,10 +228,13 @@ public class HomeController {
     public String wow(HttpServletRequest request, HttpServletResponse response){
         return "wow";
     }
-    @GetMapping("/aaa")
-    public String aaa(HttpServletRequest request, HttpServletResponse response){
 
-        return "aaa";
+    @GetMapping("/aaa")
+    public ResponseEntity aaa(HttpServletRequest request, HttpServletResponse response){
+
+        throw new RuntimeException();
+
+       /// return "aaa";
     }
 
 

@@ -100,6 +100,7 @@
 
 
             setTimeout(function() {
+/*
 
                 $.ajax({
                     type: "get",
@@ -116,6 +117,8 @@
                     }
 
                 });
+*/
+/*
 
 
                 $.ajax({
@@ -130,20 +133,21 @@
                     }
 
                 });
+*/
 
-                /*
-                                $.ajax({
-                                    type: "get",
-                                    url: "/aaa",
-                                    beforeSend: function(xhr){
-                                        xhr.setRequestHeader(_csrf_header, _csrf);	// 헤더의 csrf meta태그를 읽어 CSRF 토큰 함께 전송
-                                    }, success : function(response) {
-                                        console.log(response);
-                                    }, error : function(jqXHR, status, e) {
-                                        console.log(jqXHR);
-                                    }
 
-                                });*/
+                $.ajax({
+                    type: "get",
+                    url: "/aaa",
+                    beforeSend: function(xhr){
+                        xhr.setRequestHeader(_csrf_header, _csrf);	// 헤더의 csrf meta태그를 읽어 CSRF 토큰 함께 전송
+                    }, success : function(response) {
+                        console.log(response);
+                    }, error : function(jqXHR, status, e) {
+                        console.log(jqXHR);
+                    }
+
+                });
 
 
             }, 1000);
