@@ -100,6 +100,7 @@
 
 
             setTimeout(function() {
+
 /*
 
                 $.ajax({
@@ -110,44 +111,96 @@
                         var _csrfToken = generateCsrfToken();
                         setCookie('CSRF_TOKEN', encodeURIComponent(_csrfToken));
                         xhr.setRequestHeader("_csrf", _csrfToken);
-                    }, success : function(response) {
-                        console.log(response);
-                    }, error : function(jqXHR, status, e) {
-                        console.log(jqXHR);
+                    }, success : function(body,status,xhr) {
+
+                        console.log(typeof body);
+                        if(typeof body){
+
+                        }
+                        console.log(JSON.parse(body));
+                        var result = JSON.parse(body);
+                        console.log(result.status);
+                    }, error : function(body,status,xhr) {
+                        console.log(body);
                     }
 
                 });
-*/
-/*
 
+*/
+
+
+
+/*
 
                 $.ajax({
                     type: "get",
                     url: "/wow",
                     beforeSend: function(xhr){
                         xhr.setRequestHeader(_csrf_header, _csrf);	// 헤더의 csrf meta태그를 읽어 CSRF 토큰 함께 전송
-                    }, success : function(response) {
-                        console.log(response);
-                    }, error : function(response) {
-                        console.log(response);
+                    }, success : function(body,status,xhr) {
+                        console.log(typeof body);
+                        console.log(JSON.parse(body));
+                        var result = JSON.parse(body);
+                        console.log(result.status);
+                    }, error : function(body,status,xhr) {
+                        console.log(body);
                     }
 
                 });
+
+
 */
 
+/*
 
                 $.ajax({
                     type: "get",
                     url: "/aaa",
                     beforeSend: function(xhr){
                         xhr.setRequestHeader(_csrf_header, _csrf);	// 헤더의 csrf meta태그를 읽어 CSRF 토큰 함께 전송
-                    }, success : function(response) {
-                        console.log(response);
+                    }, success : function(body,status,xhr) {
+                        console.log(body);
                     }, error : function(jqXHR, status, e) {
                         console.log(jqXHR);
                     }
 
                 });
+*/
+
+
+            /*
+                var data = "<script>";
+                    data += "alert('test');"
+                    data += '<';
+                    data += '/script>';
+                    console.log(data);
+                $.ajax({
+                    type: "post",
+                    url: "/xss",
+                    data : {
+                        'name' :data
+                    },
+                    beforeSend: function(xhr){
+                        xhr.setRequestHeader(_csrf_header, _csrf);	// 헤더의 csrf meta태그를 읽어 CSRF 토큰 함께 전송
+                    }, success : function(body,status,xhr) {
+                        console.log(body);
+
+                     $('#test').html(body);
+
+                     console.log($('#test').html());
+                        console.log($('#test2').html());
+
+                    }, error : function(body,status,xhr) {
+                        console.log(jqXHR);
+                    }
+
+                });
+
+
+
+*/
+
+
 
 
             }, 1000);
@@ -176,39 +229,16 @@
         <input type='text' class='datepicker-here' data-language='en' />
     -->
 <!-- ======= Hero Section ======= -->
-<section id="hero">
-    <div id="heroCarousel" class="carousel slide carousel-fade" data-ride="carousel">
 
-        <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
 
-        <div class="carousel-inner" role="listbox">
+    <h2>로그인</h2><br/><br/>
+    <a href="/oauth2/authorization/facebook" class="btn_social" data-social="facebook">페이스북 로그인</a><br/>
+    <a href="/oauth2/authorization/google" class="btn_social" data-social="google">구글 로그인</a><br/>
+    <a href="/oauth2/authorization/kakao" class="btn_social" data-social="kakao">카카오톡 로그인</a><br/>
+    <a href="/oauth2/authorization/naver" class="btn_social" data-social="naver">네이버 로그인</a><br/>
 
-            <!-- Slide 1 -->
-            <div class="carousel-item active" style="background-image: url(/assets/img/slide/slide-1.jpg)">
-            </div>
+    <a href="/logout" class="btn_social" data-social="">로그아웃</a><br/>
 
-            <!-- Slide 2 -->
-            <div class="carousel-item" style="background-image: url(/assets/img/slide/slide-2.jpg)">
-            </div>
-
-            <!-- Slide 3 -->
-            <div class="carousel-item" style="background-image: url(/assets/img/slide/slide-3.jpg)">
-            </div>
-
-        </div>
-
-        <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
-            <span class="carousel-control-prev-icon icofont-simple-left" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-        </a>
-
-        <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next">
-            <span class="carousel-control-next-icon icofont-simple-right" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-        </a>
-
-    </div>
-</section><!-- End Hero -->
 
 <main id="main">
 

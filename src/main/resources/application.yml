@@ -10,19 +10,28 @@ spring:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     open-in-view: false
     show-sql: true
-    hibernate:
-      format_sql: true
-      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        ddl-auto: update
+        ﻿use_sql_comments: true
+
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 696727880639-ff25m0cus3v2v2jo71g7mrr0f22im5gl.apps.googleusercontent.com
+            client-secret: 4kgJhnszvvUFgAdmU-q0oBHC
+          facebook:
+            client-id: 374985963629841
+            client-secret: 8e144bbf585137a2b83a106de43833ae
 
   thymeleaf:
     prefix : classpath:templates/
     suffix : .html
     cache : false
-
-  security:
-    user:
-      name : user
-      password : 1234
 
   jwt:
     secret: JWTSuperSecretKey
@@ -36,4 +45,19 @@ spring:
           max-idle: 10
           min-idle: 2
 
+﻿logging:
+  ﻿level:
+    ﻿org:
+      ﻿hibernate:
+        ﻿type:
+          ﻿descriptor:
+            ﻿sql: trace
 
+custom:
+  oauth2:
+    kakao:
+      client-id: bd872a160e419f0152a6ade6e8282ff8
+      client-secret: fqPDuVyNz1Ynv19MdLw5uHqwDpToUgHm
+    naver:
+      client-id: AnlN2T8a5ZMZyq7sHy0J
+      client-secret: kDGpphaCf4

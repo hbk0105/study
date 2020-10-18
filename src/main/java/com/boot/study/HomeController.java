@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -236,6 +238,40 @@ public class HomeController {
 
        /// return "aaa";
     }
+
+
+    @RequestMapping(value = "/xss" , method = RequestMethod.POST)
+    public String saveCode(HttpServletRequest request) {
+
+        Map<String , Object> param = new HashMap<>();
+
+        param.put("name",request.getParameter("name"));
+
+        return request.getParameter("name");
+    }
+
+
+
+
+    @RequestMapping("/logout")
+    public ModelAndView exit(HttpServletRequest request, HttpServletResponse response) {
+        // token can be revoked here if needed
+
+
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("home");
+
+        logger.info("@@@@ 여기 타라  !!");
+
+        request.getSession().invalidate();
+        SecurityContextHolder.getContext().setAuthentication(null);
+
+        new SecurityContextLogoutHandler().logout(request, null, null);
+
+
+        return modelAndView;
+    }
+
 
 
 

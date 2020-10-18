@@ -1,6 +1,8 @@
 package com.boot.study.filter;
 
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.boot.study.domain.Token;
 import com.boot.study.jwt.JwtTokenUtil;
 import com.boot.study.service.JwtUserDetailsService;
@@ -158,21 +160,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         } else {
 
 
+            DecodedJWT jwt = JWT.decode(jwtToken);
+            logger.info("########################### " +jwt.getSubject());
+
+            String decodeJwtSubject = jwt.getSubject();
+
+
             // 토큰 값 변환 -> 리프레시 토큰 값 주기..
-            java.util.Base64.Decoder decoder = java.util.Base64.getUrlDecoder();
-            String[] parts = jwtToken.split("\\."); // split out the "parts" (header, payload and signature)
 
-            String headerJson = new String(decoder.decode(parts[0]));
-            String payloadJson = new String(decoder.decode(parts[1]));
-            String signatureJson = new String(decoder.decode(parts[2]));
-
-
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, String> map = mapper.readValue(payloadJson, Map.class);
-            logger.info("map :: " + map.get("sub"));
 
             ValueOperations<String, Object> vop2 = redisTemplate.opsForValue();
-            Token result = (Token) vop2.get( map.get("sub").toString()); // 유저 이름으로 redis에서 리프레시 토큰값 추출.\
+            Token result = (Token) vop2.get(decodeJwtSubject); // 유저 이름으로 redis에서 리프레시 토큰값 추출.\
 
             logger.info("@#@#@ result :: " + result);
 
@@ -202,6 +200,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
         }
-        chain.doFilter(request, response);
+
+        XssAndSqlHttpServletRequestWrapper xssRequestWrapper = new XssAndSqlHttpServletRequestWrapper(request);
+        chain.doFilter(xssRequestWrapper, response);
     }
 }
