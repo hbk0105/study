@@ -61,3 +61,9 @@ custom:
     naver:
       client-id: AnlN2T8a5ZMZyq7sHy0J
       client-secret: kDGpphaCf4
+    github:
+      client-id: b7b038165b19f1a3fd9f
+      client-secret: a9f7d9ecebd8d65d193cb2be468570d8b635282d
+    line:
+      client-id: 1655133095
+      client-secret: a3a6284be3f3a40b76b38254010a9dc2

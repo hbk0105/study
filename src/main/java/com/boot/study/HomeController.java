@@ -11,23 +11,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,10 +53,38 @@ public class HomeController {
     @Autowired
     private AuthenticationManager authenticationManager; // specific for Spring Security
 
+
+    @GetMapping("/hello")
+    public ModelAndView welcome(OAuth2User user , Model model , HttpServletRequest request , HttpServletResponse res) throws  Exception {
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("home");
+
+       // final Cookie jwtToken = CookieUtil.getCookie(request,JwtTokenUtil.ACCESS_TOKEN_NAME);
+
+        try {
+
+            logger.info("user :: " + user);
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        return mav;
+    }
+
+
     @GetMapping(value = "/")
     public ModelAndView home(Model model , HttpServletRequest request , HttpServletResponse res) {
 
+
         ModelAndView modelAndView = new ModelAndView();
+
+        if(request.getParameter("msg") != null){
+            modelAndView.addObject("msg",request.getParameter("msg").toString());
+        }
+
         ArrayList<HashMap<String, Object>> boardList = new ArrayList<HashMap<String, Object>>();
         Authentication auth;
         try{

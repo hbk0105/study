@@ -4,9 +4,8 @@ package com.boot.study.config;
 
 import com.boot.study.exception.RestAccessDeniedExceptionHandler;
 import com.boot.study.exception.RestAuthenticationExceptionHandler;
-import com.boot.study.filter.CustomLogoutSuccessHandler;
+import com.boot.study.filter.*;
 import com.boot.study.jwt.JwtAuthenticationEntryPoint;
-import com.boot.study.filter.JwtRequestFilter;
 import com.boot.study.service.CustomOAuth2UserService;
 import com.boot.study.service.JwtUserDetailsService;
 import com.boot.study.social.CustomOAuth2Provider;
@@ -25,11 +24,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -62,9 +63,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired private JwtAuthenticationEntryPoint unauthorizedHandler;
 
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
+    @Autowired
+    private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
     }
 
     @Bean
@@ -82,45 +94,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-     /*   http.authorizeRequests()
-                // 페이지 권한 설정
-                .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers("/user/**").hasRole("MEMBER")
-                .antMatchers("/**").permitAll()
 
-                .and() // 로그인 설정
-                .formLogin()
-                .loginPage("/user/login")
-                .defaultSuccessUrl("/user/login/result")
-                .permitAll()
-                .and() // 로그아웃 설정
-                .logout()
-                .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout"))
-                .logoutSuccessUrl("/user/logout/result")
-                .invalidateHttpSession(true)
-                .and()
-                // 403 예외처리 핸들링
-                .exceptionHandling().accessDeniedPage("/user/denied");*/
-        /*http
-                .authorizeRequests()
-                .antMatchers("/").permitAll()
-                .antMatchers("/h2-console/**").permitAll() //1. h2-console 에서 접근할 수 있도록 설정
-                .anyRequest().authenticated()
-                .and()
-                .csrf()
-                .ignoringAntMatchers("/h2-console/**") //2. csrf 설정으로 h2-console 콘솔에서 접속 시도하면 인증화면으로 변경되는 문제 해결
-                .and()
-                .headers()
-                .frameOptions().sameOrigin() //3. h2-console 콘솔 접속 후 화면 표시 이상 해결
-                .and()
-                .formLogin()
-                .permitAll()
-                .and()
-                .logout()
-                .permitAll()
-                .and()
-        .addFilterBefore(
-                new JwtRequestFilter(), BasicAuthenticationFilter.class);*/
 
         http
                /* // 개발 편의성을 위해 CSRF 프로텍션을 비활성화
@@ -149,15 +123,43 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/").permitAll()
                 .antMatchers("/xss").permitAll()
 
-                .antMatchers("/facebook").hasAuthority(FACEBOOK.getRoleType())
+
+
+
+               .antMatchers("/facebook").hasAuthority(FACEBOOK.getRoleType())
                 .antMatchers("/google").hasAuthority(GOOGLE.getRoleType())
                 .antMatchers("/kakao").hasAuthority(KAKAO.getRoleType())
                 .antMatchers("/naver").hasAuthority(NAVER.getRoleType())
+                .antMatchers("/github").hasAuthority(GITHUB.getRoleType())
+                .antMatchers("/line").hasAuthority(LINE.getRoleType())
+
+
+
                 .anyRequest().authenticated()
                 .and()
                 .oauth2Login()
-                .userInfoEndpoint().userService(new CustomOAuth2UserService())  // 네이버 USER INFO의 응답을 처리하기 위한 설정
+                .authorizationEndpoint()
+                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                .and()
+                .userInfoEndpoint().userService(new CustomOAuth2UserService())  // 네이버 USER INFO의 응답을 처리하기 위한 설정*/
 
+
+/*
+
+                .oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorization/")
+                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                .and()
+                .redirectionEndpoint()
+                .baseUri("/login/oauth2/callback/*")
+                .and()
+                .userInfoEndpoint()
+                .userService(new CustomOAuth2UserService())
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
+*/
 
 
 /*
@@ -167,10 +169,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .portMapper()
                 .http(8080).mapsTo(8443)
                 */
-
                 .and()
-                .defaultSuccessUrl("/")
-                .failureUrl("/")
+                //.successHandler(customLoginSuccessHandler())
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
+                //.failureUrl("/")
 
                 .and().logout()
                 .logoutUrl("/logout")
@@ -202,6 +205,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
 
+
     // CORS 허용 적용
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -221,6 +225,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     CustomLogoutSuccessHandler customLogoutSuccessHandler(){
         return new CustomLogoutSuccessHandler();
     }
+
+
+    @Bean
+    CustomLoginSuccessHandler customLoginSuccessHandler(){
+        return new CustomLoginSuccessHandler();
+    }
+
 
     // 커스텀 예외처리
     @Bean
@@ -242,7 +253,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             @Value("${custom.oauth2.kakao.client-id}") String kakaoClientId,
             @Value("${custom.oauth2.kakao.client-secret}") String kakaoClientSecret,
             @Value("${custom.oauth2.naver.client-id}") String naverClientId,
-            @Value("${custom.oauth2.naver.client-secret}") String naverClientSecret) {
+            @Value("${custom.oauth2.naver.client-secret}") String naverClientSecret,
+            @Value("${custom.oauth2.github.client-id}") String githubClientId,
+            @Value("${custom.oauth2.github.client-secret}") String githubClientSecret,
+            @Value("${custom.oauth2.line.client-id}") String lineClientId,
+            @Value("${custom.oauth2.line.client-secret}") String lineClientSecret){
         List<ClientRegistration> registrations = oAuth2ClientProperties
                 .getRegistration().keySet().stream()
                 .map(client -> getRegistration(oAuth2ClientProperties, client))
@@ -260,6 +275,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .clientSecret(naverClientSecret)
                 .jwkSetUri("temp")
                 .build());
+
+        registrations.add(CustomOAuth2Provider.GITHUB.getBuilder("github")
+                .clientId(githubClientId)
+                .clientSecret(githubClientSecret)
+                .jwkSetUri("temp")
+                .build());
+
+        registrations.add(CustomOAuth2Provider.LINE.getBuilder("line")
+                .clientId(lineClientId)
+                .clientSecret(lineClientSecret)
+                .jwkSetUri("http://localhost:8080")
+                .build());
+
         return new InMemoryClientRegistrationRepository(registrations);
     }
 
@@ -286,6 +314,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return null;
     }
 
+
+    @Bean
+    public JwtDecoderFactory<ClientRegistration> idTokenecoderFactory() {
+        OidcIdTokenDecoderFactory idTokenDecoderFactory = new OidcIdTokenDecoderFactory();
+        idTokenDecoderFactory.setJwsAlgorithmResolver(clientRegistration -> MacAlgorithm.HS256);
+        return idTokenDecoderFactory;
+    }
 
     /*
 

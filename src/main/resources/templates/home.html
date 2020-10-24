@@ -34,6 +34,7 @@
 
         var _csrf_header = /*[[ ${_csrf_header} ]]*/;
         var _csrf = /*[[ ${_csrf} ]]*/;
+        var msg = /*[[ ${msg} ]]*/;
 
         /*]]*/
 
@@ -66,6 +67,10 @@
         /*<![CDATA[*/
 
         $( document ).ready(function() {
+
+            if(msg != null){
+                alert(msg);
+            }
 
             var token = $("meta[name='_csrf']").attr("content");
             var header = $("meta[name='_csrf_header']").attr("content");
@@ -236,6 +241,10 @@
     <a href="/oauth2/authorization/google" class="btn_social" data-social="google">구글 로그인</a><br/>
     <a href="/oauth2/authorization/kakao" class="btn_social" data-social="kakao">카카오톡 로그인</a><br/>
     <a href="/oauth2/authorization/naver" class="btn_social" data-social="naver">네이버 로그인</a><br/>
+    <a href="/oauth2/authorization/github" class="btn_social" data-social="github">깃허브 로그인</a><br/>
+
+    <a href="/oauth2/authorization/line">Line 로그인</a>
+
 
     <a href="/logout" class="btn_social" data-social="">로그아웃</a><br/>
 

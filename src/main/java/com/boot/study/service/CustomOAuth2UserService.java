@@ -1,15 +1,17 @@
 package com.boot.study.service;
 
-import com.boot.study.HomeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequestEntityConverter;
@@ -17,6 +19,8 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
@@ -26,12 +30,17 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+
+    HttpServletRequest request;
+    HttpServletResponse response;
 
     private Logger logger = LoggerFactory.getLogger(CustomOAuth2UserService.class);
 
@@ -54,11 +63,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         this.restOperations = restTemplate;
     }
 
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+
+        logger.info("@############### 여기는?");
+
         Assert.notNull(userRequest, "userRequest cannot be null");
 
+
         if (!StringUtils.hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
+
+            logger.info("@!!!!!!!!!!!!11111111111111111111");
+
             OAuth2Error oauth2Error = new OAuth2Error(
                     MISSING_USER_INFO_URI_ERROR_CODE,
                     "Missing required UserInfo Uri in UserInfoEndpoint for Client Registration: " +
@@ -67,8 +84,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             );
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
+
+
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
                 .getUserInfoEndpoint().getUserNameAttributeName();
+
         if (!StringUtils.hasText(userNameAttributeName)) {
             OAuth2Error oauth2Error = new OAuth2Error(
                     MISSING_USER_NAME_ATTRIBUTE_ERROR_CODE,
@@ -79,47 +99,105 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
 
-        RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
 
-        ResponseEntity<Map<String, Object>> response;
-        try {
-            response = this.restOperations.exchange(request, PARAMETERIZED_RESPONSE_TYPE);
-        } catch (OAuth2AuthorizationException ex) {
-            OAuth2Error oauth2Error = ex.getError();
-            StringBuilder errorDetails = new StringBuilder();
-            errorDetails.append("Error details: [");
-            errorDetails.append("UserInfo Uri: ").append(
-                    userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri());
-            errorDetails.append(", Error Code: ").append(oauth2Error.getErrorCode());
-            if (oauth2Error.getDescription() != null) {
-                errorDetails.append(", Error Description: ").append(oauth2Error.getDescription());
+        if(!"line".equals(userRequest.getClientRegistration().getRegistrationId())){
+
+            RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
+
+            ResponseEntity<Map<String, Object>> response;
+            try {
+                response = this.restOperations.exchange(request, PARAMETERIZED_RESPONSE_TYPE);
+            } catch (OAuth2AuthorizationException ex) {
+                OAuth2Error oauth2Error = ex.getError();
+                StringBuilder errorDetails = new StringBuilder();
+                errorDetails.append("Error details: [");
+                errorDetails.append("UserInfo Uri: ").append(
+                        userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri());
+                errorDetails.append(", Error Code: ").append(oauth2Error.getErrorCode());
+                if (oauth2Error.getDescription() != null) {
+                    errorDetails.append(", Error Description: ").append(oauth2Error.getDescription());
+                }
+                errorDetails.append("]");
+                oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
+                        "An error occurred while attempting to retrieve the UserInfo Resource: " + errorDetails.toString(), null);
+
+                throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
+            } catch (RestClientException ex) {
+                OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
+                        "An error occurred while attempting to retrieve the UserInfo Resource: " + ex.getMessage(), null);
+                throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
             }
-            errorDetails.append("]");
-            oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
-                    "An error occurred while attempting to retrieve the UserInfo Resource: " + errorDetails.toString(), null);
-            throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
-        } catch (RestClientException ex) {
-            OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
-                    "An error occurred while attempting to retrieve the UserInfo Resource: " + ex.getMessage(), null);
-            throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
+
+            Map<String, Object> userAttributes = getUserAttributes(response);
+            Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+            authorities.add(new OAuth2UserAuthority(userAttributes));
+            OAuth2AccessToken token = userRequest.getAccessToken();
+
+            for (String authority : token.getScopes()) {
+                authorities.add(new SimpleGrantedAuthority("SCOPE_" + userRequest.getClientRegistration().getRegistrationId().toUpperCase()));
+            }
+
+            logger.info("userAttributes :: " + userAttributes);
+            logger.info("authorities :: " + authorities);
+            logger.info("userNameAttributeName :: " + userNameAttributeName);
+
+            return new DefaultOAuth2User(authorities, userAttributes, userNameAttributeName);
+
+        }else{
+
+            RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
+
+            logger.info("request :: " + request);
+
+            logger.info("## response.getBody() :: " + request.getHeaders());
+
+            HttpHeaders map = request.getHeaders();
+
+            logger.info("## Accept :: " + map.get("Accept"));
+            String base64Creds = map.get("Authorization").toString().replace("[","").replace("]","");
+
+            logger.info("base64Creds :: " + base64Creds) ;
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Basic " + base64Creds);
+
+            logger.info("headers :: " + headers) ;
+
+
+            ResponseEntity<Map<String, Object>> response;
+
+            response = this.restOperations.exchange("https://api.line.me/v2/profile", HttpMethod.POST, request, PARAMETERIZED_RESPONSE_TYPE);
+
+            logger.info("userNameAttributeName :: " + userNameAttributeName);
+            logger.info("response :: " + response);
+
+            Map<String, Object> userAttributes = getUserAttributes(response);
+            Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+            authorities.add(new OAuth2UserAuthority(userAttributes));
+            OAuth2AccessToken token = userRequest.getAccessToken();
+
+            for (String authority : token.getScopes()) {
+                authorities.add(new SimpleGrantedAuthority("SCOPE_" + userRequest.getClientRegistration().getRegistrationId().toUpperCase()));
+            }
+
+           // authorities.add(new SimpleGrantedAuthority("SCOPE_LINE"));
+
+            logger.info("userAttributes :: " + userAttributes);
+            logger.info("authorities :: " + authorities);
+            logger.info("userNameAttributeName :: " + userNameAttributeName);
+
+
+
+
+
+
+
+
+            return new DefaultOAuth2User(authorities, userAttributes, userNameAttributeName);
+
         }
 
-        Map<String, Object> userAttributes = getUserAttributes(response);
-        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
-        authorities.add(new OAuth2UserAuthority(userAttributes));
-        OAuth2AccessToken token = userRequest.getAccessToken();
 
-        logger.info("token :: " + token);
-
-        for (String authority : token.getScopes()) {
-            authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
-        }
-
-        logger.info("userAttributes :: " + userAttributes);
-        logger.info("authorities :: " + authorities);
-        logger.info("userNameAttributeName :: " + userNameAttributeName);
-
-        return new DefaultOAuth2User(authorities, userAttributes, userNameAttributeName);
     }
 
     // 네이버는 HTTP response body에 response 안에 id 값을 포함한 유저정보를 넣어주므로 유저정보를 빼내기 위한 작업을 함
@@ -132,4 +210,20 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
         return userAttributes;
     }
+
+    private Set<GrantedAuthority> setGrantedAuthorities(OidcUserRequest userRequest, OidcUserInfo userInfo) {
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+        // 이부분에서 ROLE_USER 를 추가한다.
+        authorities.add(new OidcUserAuthority(userRequest.getIdToken(), userInfo));
+        // SCOPE_{}는 필요없으므로 추가하지 않는다
+//        OAuth2AccessToken token = userRequest.getAccessToken();
+//        for (String authority : token.getScopes()) {
+//            authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
+//        }
+
+        authorities.add(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+
+        return authorities;
+    }
+
 }

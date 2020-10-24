@@ -4,7 +4,9 @@ public enum SocialType {
     FACEBOOK("facebook"),
     GOOGLE("google"),
     KAKAO("kakao"),
-    NAVER("naver");
+    NAVER("naver"),
+    GITHUB("github"),
+    LINE("line");
 
     private final String ROLE_PREFIX = "ROLE_";
     private String name;

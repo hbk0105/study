@@ -33,6 +33,43 @@ public enum CustomOAuth2Provider {
             builder.clientName("Naver");
             return builder;
         }
+    },
+    GITHUB {
+
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(registrationId,
+                    ClientAuthenticationMethod.POST, DEFAULT_LOGIN_REDIRECT_URL);
+            builder.scope("profile");
+            builder.authorizationUri("https://github.com/login/oauth/authorize");
+            builder.tokenUri("https://github.com/login/oauth/access_token");
+            builder.userInfoUri("https://api.github.com/user");
+            builder.userNameAttributeName("id");
+            builder.clientName("Github");
+            return builder;
+        }
+
+
+    }
+    , LINE {
+
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(registrationId,
+                    ClientAuthenticationMethod.POST, DEFAULT_LOGIN_REDIRECT_URL);
+            builder.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
+            builder.scope("profile");
+            builder.authorizationUri("https://access.line.me/oauth2/v2.1/authorize");
+            builder.tokenUri("https://api.line.me/oauth2/v2.1/token");
+            builder.userInfoUri("https://api.libe.me/v2/profile");
+            builder.userNameAttributeName("userId");
+            //builder.jwkSetUri("http://localhost:8080");
+            //builder.redirectUriTemplate(DEFAULT_LOGIN_REDIRECT_URL);
+            builder.clientName("Line");
+            return builder;
+        }
+
+
     };
 
     private static final String DEFAULT_LOGIN_REDIRECT_URL = "{baseUrl}/login/oauth2/code/{registrationId}";

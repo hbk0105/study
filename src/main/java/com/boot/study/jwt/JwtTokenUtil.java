@@ -85,7 +85,7 @@ public class JwtTokenUtil implements Serializable {
     }
 
     //generate token for user
-    public String generateAccessToken(UserDetails userDetails) {
+    public static String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         List<String> li = new ArrayList<>();
         for (GrantedAuthority a: userDetails.getAuthorities()) {
@@ -97,7 +97,7 @@ public class JwtTokenUtil implements Serializable {
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
     }
 
-    public String generateRefreshToken(String username) {
+    public static String generateRefreshToken(String username) {
         return Jwts.builder().setSubject(username).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_REFRESH_TOKEN_VALIDITY * 1000))
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();

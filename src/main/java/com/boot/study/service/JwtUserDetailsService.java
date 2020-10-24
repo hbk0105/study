@@ -27,15 +27,27 @@ public class JwtUserDetailsService implements UserDetailsService {
         List<GrantedAuthority> roles = new ArrayList<>();
 
         if (account == null) {
-            throw new UsernameNotFoundException("User not found with username: " + username);
+            //throw new UsernameNotFoundException("User not found with username: " + username);
+            roles.add(new SimpleGrantedAuthority("ROLE_LINE"));
+            return new User(username, "1234", roles);
+
+        }else{
+
+            if ((account.getRole()).equals("ROLE_ADMIN")) {
+                roles.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            } else {
+                roles.add(new SimpleGrantedAuthority("ROLE_USER"));
+                roles.add(new SimpleGrantedAuthority("ROLE_HI"));
+            }
+            return new User(account.getUsername(), account.getPassword(), roles);
+
         }
-        if ((account.getRole()).equals("ROLE_ADMIN")) {
-            roles.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        } else {
-            roles.add(new SimpleGrantedAuthority("ROLE_USER"));
-            roles.add(new SimpleGrantedAuthority("ROLE_HI"));
-        }
-        return new User(account.getUsername(), account.getPassword(), roles);
+
+
+
+
+
+
     }
 
 }

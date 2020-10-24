@@ -6,7 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.boot.study.domain.Token;
 import com.boot.study.jwt.JwtTokenUtil;
 import com.boot.study.service.JwtUserDetailsService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.boot.study.util.CookieUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +36,8 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import static com.boot.study.filter.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 
 
 @Component
@@ -89,11 +92,24 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // https://do-study.tistory.com/106
         // https://velog.io/@ehdrms2034/Spring-Security-JWT-Redis%EB%A5%BC-%ED%86%B5%ED%95%9C-%ED%9A%8C%EC%9B%90%EC%9D%B8%EC%A6%9D%ED%97%88%EA%B0%80-%EA%B5%AC%ED%98%84
 
+        //String requestTokenHeader = request.getHeader("Authorization");
 
-        String requestTokenHeader = request.getHeader("Authorization");
+        final Cookie ckToken = CookieUtils.getCookie(request,jwtTokenUtil.ACCESS_TOKEN_NAME).get();
+
+        String requestTokenHeader = "";
+
+        if(ckToken != null){
+
+           logger.info("getName :: " + ckToken.getName() );
+
+            logger.info("getValue :: " + ckToken.getValue());
+
+            requestTokenHeader = "Bearer "+ckToken.getValue();
+
+        }
 
 
-        // csrf 방어 검증 시작
+        // csrf 방어 검증 시작 [필요한 URL만 필터 하기..]
         // 헤더로 전달된 csrf 토큰 값
         String paramToken = request.getHeader("_csrf");
 
@@ -106,7 +122,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             for (Cookie cookie : request.getCookies()) {
                 if ("CSRF_TOKEN".equals(cookie.getName())) {
                     cookieToken = URLDecoder.decode(cookie.getValue(), "UTF-8");
-
                     // 재사용이 불가능하도록 쿠키 만료
                     cookie.setPath("/");
                     cookie.setValue("");
@@ -121,7 +136,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (cookieToken.equals(paramToken)) {
             crsfdDfense = true;
         }
-        // csrf 방어 검증 종료
+        // csrf 방어 검증 종료  [필요한 URL만 필터 하기..]
 
         logger.info("crsfdDfense :: " + crsfdDfense);
         logger.info("paramToken :: "+ paramToken);
@@ -129,6 +144,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String username = null;
         String jwtToken = null;
+
+        logger.info("### requestTokenHeader :: " + requestTokenHeader);
 
 
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
@@ -140,6 +157,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     username = jwtTokenUtil.getUsername(jwtToken);
                 }else{
                     // 만료
+
+                    logger.info("### username :: " + username);
+
 
                 }
 
