@@ -29,18 +29,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
-
-    HttpServletRequest request;
-    HttpServletResponse response;
 
     private Logger logger = LoggerFactory.getLogger(CustomOAuth2UserService.class);
 
@@ -66,16 +60,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-
-        logger.info("@############### 여기는?");
-
         Assert.notNull(userRequest, "userRequest cannot be null");
 
-
         if (!StringUtils.hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
-
-            logger.info("@!!!!!!!!!!!!11111111111111111111");
-
             OAuth2Error oauth2Error = new OAuth2Error(
                     MISSING_USER_INFO_URI_ERROR_CODE,
                     "Missing required UserInfo Uri in UserInfoEndpoint for Client Registration: " +
@@ -84,7 +71,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             );
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
-
 
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
                 .getUserInfoEndpoint().getUserNameAttributeName();
@@ -99,103 +85,63 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
 
+        // 소셜 정보
+        logger.info("userRequest :: " + userRequest.getClientRegistration());
 
-        if(!"line".equals(userRequest.getClientRegistration().getRegistrationId())){
+        ResponseEntity<Map<String, Object>> response;
 
-            RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
+        try {
 
-            ResponseEntity<Map<String, Object>> response;
-            try {
+            if(!"line".equals(userRequest.getClientRegistration().getRegistrationId())){
+                RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
                 response = this.restOperations.exchange(request, PARAMETERIZED_RESPONSE_TYPE);
-            } catch (OAuth2AuthorizationException ex) {
-                OAuth2Error oauth2Error = ex.getError();
-                StringBuilder errorDetails = new StringBuilder();
-                errorDetails.append("Error details: [");
-                errorDetails.append("UserInfo Uri: ").append(
-                        userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri());
-                errorDetails.append(", Error Code: ").append(oauth2Error.getErrorCode());
-                if (oauth2Error.getDescription() != null) {
-                    errorDetails.append(", Error Description: ").append(oauth2Error.getDescription());
-                }
-                errorDetails.append("]");
-                oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
-                        "An error occurred while attempting to retrieve the UserInfo Resource: " + errorDetails.toString(), null);
+            }else{
 
-                throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
-            } catch (RestClientException ex) {
-                OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
-                        "An error occurred while attempting to retrieve the UserInfo Resource: " + ex.getMessage(), null);
-                throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
+                RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
+                HttpHeaders map = request.getHeaders();
+                String base64Creds = map.get("Authorization").toString().replace("[","").replace("]","");
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Authorization", "Basic " + base64Creds);
+                response = this.restOperations.exchange("https://api.line.me/v2/profile", HttpMethod.POST, request, PARAMETERIZED_RESPONSE_TYPE);
             }
 
-            Map<String, Object> userAttributes = getUserAttributes(response);
-            Set<GrantedAuthority> authorities = new LinkedHashSet<>();
-            authorities.add(new OAuth2UserAuthority(userAttributes));
-            OAuth2AccessToken token = userRequest.getAccessToken();
-
-            for (String authority : token.getScopes()) {
-                authorities.add(new SimpleGrantedAuthority("SCOPE_" + userRequest.getClientRegistration().getRegistrationId().toUpperCase()));
+        } catch (OAuth2AuthorizationException ex) {
+            OAuth2Error oauth2Error = ex.getError();
+            StringBuilder errorDetails = new StringBuilder();
+            errorDetails.append("Error details: [");
+            errorDetails.append("UserInfo Uri: ").append(
+                    userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri());
+            errorDetails.append(", Error Code: ").append(oauth2Error.getErrorCode());
+            if (oauth2Error.getDescription() != null) {
+                errorDetails.append(", Error Description: ").append(oauth2Error.getDescription());
             }
+            errorDetails.append("]");
+            oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
+                    "An error occurred while attempting to retrieve the UserInfo Resource: " + errorDetails.toString(), null);
 
-            logger.info("userAttributes :: " + userAttributes);
-            logger.info("authorities :: " + authorities);
-            logger.info("userNameAttributeName :: " + userNameAttributeName);
-
-            return new DefaultOAuth2User(authorities, userAttributes, userNameAttributeName);
-
-        }else{
-
-            RequestEntity<?> request = this.requestEntityConverter.convert(userRequest);
-
-            logger.info("request :: " + request);
-
-            logger.info("## response.getBody() :: " + request.getHeaders());
-
-            HttpHeaders map = request.getHeaders();
-
-            logger.info("## Accept :: " + map.get("Accept"));
-            String base64Creds = map.get("Authorization").toString().replace("[","").replace("]","");
-
-            logger.info("base64Creds :: " + base64Creds) ;
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Basic " + base64Creds);
-
-            logger.info("headers :: " + headers) ;
-
-
-            ResponseEntity<Map<String, Object>> response;
-
-            response = this.restOperations.exchange("https://api.line.me/v2/profile", HttpMethod.POST, request, PARAMETERIZED_RESPONSE_TYPE);
-
-            logger.info("userNameAttributeName :: " + userNameAttributeName);
-            logger.info("response :: " + response);
-
-            Map<String, Object> userAttributes = getUserAttributes(response);
-            Set<GrantedAuthority> authorities = new LinkedHashSet<>();
-            authorities.add(new OAuth2UserAuthority(userAttributes));
-            OAuth2AccessToken token = userRequest.getAccessToken();
-
-            for (String authority : token.getScopes()) {
-                authorities.add(new SimpleGrantedAuthority("SCOPE_" + userRequest.getClientRegistration().getRegistrationId().toUpperCase()));
-            }
-
-           // authorities.add(new SimpleGrantedAuthority("SCOPE_LINE"));
-
-            logger.info("userAttributes :: " + userAttributes);
-            logger.info("authorities :: " + authorities);
-            logger.info("userNameAttributeName :: " + userNameAttributeName);
-
-
-
-
-
-
-
-
-            return new DefaultOAuth2User(authorities, userAttributes, userNameAttributeName);
-
+            throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
+        } catch (RestClientException ex) {
+            OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
+                    "An error occurred while attempting to retrieve the UserInfo Resource: " + ex.getMessage(), null);
+            throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
         }
+
+        Map<String, Object> userAttributes = getUserAttributes(response);
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+        authorities.add(new OAuth2UserAuthority(userAttributes));
+        OAuth2AccessToken token = userRequest.getAccessToken();
+
+        for (String authority : token.getScopes()) {
+            authorities.add(new SimpleGrantedAuthority("SCOPE_" + userRequest.getClientRegistration().getRegistrationId().toUpperCase()));
+        }
+
+        logger.info("userAttributes :: " + userAttributes);
+        logger.info("authorities :: " + authorities);
+        logger.info("userNameAttributeName :: " + userNameAttributeName);
+
+        //  DB에 회원정보 저장 및 수정 로직 필요
+
+        return new DefaultOAuth2User(authorities, userAttributes, userNameAttributeName);
 
 
     }

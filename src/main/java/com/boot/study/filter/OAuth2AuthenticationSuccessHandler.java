@@ -83,15 +83,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         }
 
+
         System.out.println("getPrincipal :: " + authentication.getPrincipal());
         System.out.println("getName :: " + authentication.getName());
         System.out.println("getAuthorities :: " + authentication.getAuthorities());
 
         DefaultOAuth2User user = (DefaultOAuth2User) authentication.getPrincipal();
 
-        System.out.println("principal :: " +user.getAttribute("User Attributes"));
-
-        String id = (String) user.getAttributes().get("id");
+        System.out.println("principal :: " +user);
 
         List<String> li = new ArrayList<>();
         for (GrantedAuthority a: authentication.getAuthorities()) {
@@ -103,13 +102,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
 
         /*
-           1. DefaultOAuth2User 값을 이용하여 프로세스 추가 필요..
-
-           아래 로직은 테스트 코드
-
+           1. DB에 저장 된 getName의 정보를 갖고 토큰 생성
+           // LINE : userId , 구글 :sub ,  나머지는 id
 
         */
-        /*
+
         final UserDetails userDetails = userDetailsService.loadUserByUsername("TEST");
 
         String accessToken = JwtTokenUtil.generateAccessToken(userDetails);
@@ -125,7 +122,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         CookieUtils.addCookie(response,JwtTokenUtil.ACCESS_TOKEN_NAME, accessToken,(int) JwtTokenUtil.JWT_ACCESS_TOKEN_VALIDITY);
 
-*/
+
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
         return UriComponentsBuilder.fromUriString(targetUrl)

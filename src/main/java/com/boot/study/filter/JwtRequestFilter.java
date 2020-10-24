@@ -94,7 +94,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         //String requestTokenHeader = request.getHeader("Authorization");
 
-        final Cookie ckToken = CookieUtils.getCookie(request,jwtTokenUtil.ACCESS_TOKEN_NAME).get();
+        Cookie ckToken = null;
+
+        logger.info("CookieUtils.getCookie(request,jwtTokenUtil.ACCESS_TOKEN_NAME) :: " + CookieUtils.getCookie(request,jwtTokenUtil.ACCESS_TOKEN_NAME).isPresent());
+
+        if(CookieUtils.getCookie(request,jwtTokenUtil.ACCESS_TOKEN_NAME).isPresent()){
+
+            ckToken = CookieUtils.getCookie(request,jwtTokenUtil.ACCESS_TOKEN_NAME).get();
+
+        }
 
         String requestTokenHeader = "";
 
