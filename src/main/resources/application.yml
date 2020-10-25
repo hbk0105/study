@@ -33,9 +33,6 @@ spring:
     suffix : .html
     cache : false
 
-  jwt:
-    secret: JWTSuperSecretKey
-
   redis:
       host: localhost
       port: 6379
@@ -45,7 +42,14 @@ spring:
           max-idle: 10
           min-idle: 2
 
-﻿logging:
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      maxFileSize: 200MB
+      maxRequestSize: 215MB
+
+
   ﻿level:
     ﻿org:
       ﻿hibernate:
@@ -67,3 +71,7 @@ custom:
     line:
       client-id: 1655133095
       client-secret: a3a6284be3f3a40b76b38254010a9dc2
+
+
+file:
+  upload-dir: C:/upload

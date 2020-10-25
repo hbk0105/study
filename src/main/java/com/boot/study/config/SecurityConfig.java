@@ -119,6 +119,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/test/**").hasRole("ADMIN")
                 .antMatchers("/wow/**").hasRole("USER")
 
+                .antMatchers("/fileUpload").permitAll()
+                .antMatchers("/download/*").permitAll()
+
                 .antMatchers("/aaa").permitAll()
                 .antMatchers("/").permitAll()
                 .antMatchers("/xss").permitAll()
