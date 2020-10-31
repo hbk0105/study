@@ -75,3 +75,17 @@ custom:
 
 file:
   upload-dir: C:/upload
+
+
+server:
+  port: 8443 #Https port
+  ssl:
+    enabled: true
+    key-store: C:\\localSSL.jks # 1번에서 생성한 Key store 경로와 파일명을 적어줍니다.
+    key-store-password: hee0701  # 1번에서 생성한 Key store의 비밀번호를 적어줍니다.
+    key-password: hee0701 # 1번에서 생성한 키스토어의 마지막의 키 비밀번호
+    key-alias: localSSL # 키 스토어 별칭
+    trust-store: C:\\localSSL.ts # 2번에서 생성한 Trust-Store 경로
+    trust-store-password: hee0701 # Trust-Store 비밀번호
+
+# security.require-ssl=true
