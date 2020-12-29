@@ -15,6 +15,11 @@ configurations {
 	}
 }
 
+bootWar{  //bootWar Task시 이름 지정
+	archiveBaseName="springproject"
+	archiveVersion="0.0.1-SNAPSHOT"
+}
+
 repositories {
 	mavenCentral()
 }
@@ -24,6 +29,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation group: 'nz.net.ultraq.thymeleaf', name: 'thymeleaf-layout-dialect', version: '2.4.1'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat' 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	compile 'org.springframework.boot:spring-boot-devtools'
