@@ -25,6 +25,7 @@ public class StudyApplication extends SpringBootServletInitializer {
 		return application.sources(SpringApplicationBuilder.class);
 	}
 
+
 	public static void main(String[] args) {
 		SpringApplication.run(SpringApplicationBuilder.class, args);
 	}
