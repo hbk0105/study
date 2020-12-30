@@ -20,15 +20,20 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 @SpringBootApplication
 public class StudyApplication extends SpringBootServletInitializer {
+
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(SpringApplicationBuilder.class);
+		return application.sources(Application.class);
 	}
-
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringApplicationBuilder.class, args);
+		SpringApplication app = new SpringApplication(Application.class);
+		app.run(args);
 	}
+/*
+	public static void main(String[] args) {
+		SpringApplication.run(SpringApplicationBuilder.class, args);
+	}*/
 /*
 	@Bean
 	DispatcherServlet dispatcherServlet () {
