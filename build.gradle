@@ -18,7 +18,7 @@ configurations {
 
 bootWar{  //bootWar Task시 이름 지정
     archiveBaseName="study"
-    archiveVersion="0.0.1-study"
+    archiveVersion="0.0.1"
 }
 
 repositories {
