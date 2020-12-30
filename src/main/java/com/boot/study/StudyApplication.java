@@ -34,7 +34,8 @@ public class StudyApplication extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(SpringApplicationBuilder.class, args);
 	}*/
-/* 
+/*
+
 	@Bean
 	DispatcherServlet dispatcherServlet () {
 		DispatcherServlet ds = new DispatcherServlet();
