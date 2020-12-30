@@ -35,6 +35,7 @@ public class StudyApplication extends SpringBootServletInitializer {
 		SpringApplication.run(SpringApplicationBuilder.class, args);
 	}*/
 /*
+
 	@Bean
 	DispatcherServlet dispatcherServlet () {
 		DispatcherServlet ds = new DispatcherServlet();
