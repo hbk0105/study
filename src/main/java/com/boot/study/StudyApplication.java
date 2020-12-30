@@ -19,7 +19,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.DispatcherServlet;
 
 @SpringBootApplication
-public class StudyApplication {
+public class StudyApplication extends SpringBootServletInitializer {
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(StudyApplication.class);
+	}
+
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(StudyApplication.class, args);
