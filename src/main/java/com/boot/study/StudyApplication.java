@@ -39,6 +39,7 @@ public class StudyApplication extends SpringBootServletInitializer {
 */
 
 
+
 	@Bean
 	public ServletWebServerFactory servletContainer() {
 		TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
