@@ -22,12 +22,12 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class StudyApplication extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(SpringApplicationBuilder.class);
+		return application.sources(StudyApplication.class);
 	}
 
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringApplicationBuilder.class, args);
+		SpringApplication.run(StudyApplication.class, args);
 	}
 /*
 	@Bean
