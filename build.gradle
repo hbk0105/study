@@ -12,13 +12,13 @@ sourceCompatibility = '1.8'
 
 configurations {
     compileOnly {
-        extendsFrom annotationProcessor 
+        extendsFrom annotationProcessor
     }
 }
 
 bootWar{  //bootWar Task시 이름 지정
-    archiveBaseName="springproject"
-    archiveVersion="0.0.1-SNAPSHOT"
+    archiveBaseName="study"
+    archiveVersion="0.0.1-study"
 }
 
 repositories {
