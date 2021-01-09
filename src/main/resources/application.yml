@@ -5,6 +5,10 @@ spring:
     url: jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC&characterEncoding=UTF-8
     username: htofu
     password: htofu
+    tomcat:
+      testWhileIdle: true
+      timeBetweenEvictionRunsMillis: 60000
+      validationQuery : SELECT 1
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
@@ -34,7 +38,7 @@ spring:
     cache : false
 
   redis:
-      host: localhost
+      host: #localhost
       port: 6379
       lettuce:
         pool:
@@ -50,13 +54,13 @@ spring:
       maxRequestSize: 215MB
 
 
-  ﻿level:
-    ﻿org:
-      ﻿hibernate:
-        ﻿type:
-          ﻿descriptor:
-            ﻿sql: trace
-
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
 custom:
   oauth2:
     kakao:
